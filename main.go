@@ -4,6 +4,10 @@ import (
 	"fmt"
 )
 
+func SayHello() string {
+	return "HELLO"
+}
+
 func main() {
 	fmt.Println("Need to make some handlers to handle auth")
 	// create a login handler
