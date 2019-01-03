@@ -13,7 +13,7 @@ jobs:
             echo 'export TAG=latest' >> $BASH_ENV
             echo 'export IMAGE_NAME=celeste-auth-service' >> $BASH_ENV 
             echo 'export DOCKER_NAME=brucewong21' >> $BASH_ENV
-						echo 'export CONTAINER_TO_PORT_MAP=6800:6800' >> $BASH_ENV
+            echo 'export CONTAINER_TO_PORT_MAP=6800:6800' >> $BASH_ENV
       - run:
           name: Run Tests
           command: |
