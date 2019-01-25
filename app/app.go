@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
+	"net/http"
 )
 
 type Server struct {
@@ -13,12 +14,17 @@ type Server struct {
 }
 
 type User struct {
-	Id       int
-	Email    string
-	Password string
+	Id       int    `json:"id"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 type UserService interface {
-	CreateUser(email string, password string) (u *User, err error)
-	FindUserByCredentials(email string, password string) (u *User, err error)
+	CreateUser() (u *User, err error)
+	FindUserByCredentials() (u *User, err error)
+}
+
+type UserHandler interface {
+	CreateUser() http.Handler
+	FindUserByCredentials() http.Handler
 }

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/CelesteComet/celeste-auth-service/app"
+	"github.com/CelesteComet/celeste-auth-service/app/mhttp"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 	"log"
@@ -37,8 +38,14 @@ func main() {
 	}
 	log.Println("Server connection successful")
 	defer db.Close()
+
 	router := &mux.Router{}
 	s := &app.Server{Port: ":1337", DB: db, Router: router}
+	us := mhttp.UserHandler{DB: db}
+
+	// Routes
+	s.Router.Handle("/user", us.CreateUser()).Methods("POST")
+
 	log.Println("Service is now running on port 1337")
 	http.ListenAndServe(s.Port, s.Router)
 }
