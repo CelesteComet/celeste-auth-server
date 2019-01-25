@@ -10,11 +10,11 @@ WORKDIR /go/src/github.com/CelesteComet/celeste-auth-service
 RUN go get 
 
 # Build Binary
-RUN go build .
+RUN go intall
 
 # Run server when container is run
 
-CMD ./celeste-auth-service
+CMD /go/bin/celeste-auth-service
 
 # Expose port 6800 of container
 
