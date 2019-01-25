@@ -29,6 +29,37 @@ func SayHello() string {
 	return "HELLO"
 }
 
+type AuthHandler struct {
+	next http.Handler
+}
+
+var _ app.AuthHandler = &AuthHandler{}
+
+func (h *AuthHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("CCCookie")
+	if err != nil {
+		fmt.Fprintf(w, "cookie not found")
+		return
+	}
+
+	cookie.HttpOnly = true
+
+	http.SetCookie(w, cookie)
+	fmt.Fprintf(w, cookie.Value)
+
+	h.next.ServeHTTP(w, r)
+}
+
+func MustAuth(handler http.Handler) http.Handler {
+	return &AuthHandler{next: handler}
+}
+
+type protectedRouteHandler struct{}
+
+func (h *protectedRouteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "you are authenticated")
+}
+
 func main() {
 	log.Println("Starting Authentication Service")
 	log.Println("Connecting to AWS RDS Postgresql server")
@@ -45,7 +76,7 @@ func main() {
 
 	// Routes
 	s.Router.Handle("/user", us.CreateUser()).Methods("POST")
-
+	s.Router.Handle("/", MustAuth(&protectedRouteHandler{}))
 	log.Println("Service is now running on port 1337")
 	http.ListenAndServe(s.Port, s.Router)
 }
