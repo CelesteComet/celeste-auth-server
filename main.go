@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/CelesteComet/celeste-auth-service/app"
+	"github.com/CelesteComet/celeste-auth-service/pkg/auth"
 	"github.com/CelesteComet/celeste-auth-service/app/mhttp"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
@@ -24,10 +25,6 @@ var (
 var (
 	connStr = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
 )
-
-func SayHello() string {
-	return "HELLO"
-}
 
 type AuthHandler struct {
 	next http.Handler
@@ -50,13 +47,11 @@ func (h *AuthHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.next.ServeHTTP(w, r)
 }
 
-func MustAuth(handler http.Handler) http.Handler {
-	return &AuthHandler{next: handler}
-}
 
 type protectedRouteHandler struct{}
 
 func (h *protectedRouteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("WELL WELL WELL")
 	fmt.Fprintf(w, "you are authenticated")
 }
 
@@ -76,7 +71,7 @@ func main() {
 
 	// Routes
 	s.Router.Handle("/user", us.CreateUser()).Methods("POST")
-	s.Router.Handle("/", MustAuth(&protectedRouteHandler{}))
+	s.Router.Handle("/", auth.MustAuth(&protectedRouteHandler{}))
 	log.Println("Service is now running on port 1337")
 	http.ListenAndServe(s.Port, s.Router)
 }

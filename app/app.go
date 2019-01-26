@@ -25,7 +25,7 @@ type UserService interface {
 }
 
 type UserHandler interface {
-	ProvideToken(u *User, w *http.ResponseWriter) string
+	ProvideToken(u *User) string
 	CreateUser() http.Handler
 	FindUserByCredentials() http.Handler
 }

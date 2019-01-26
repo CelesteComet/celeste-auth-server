@@ -3,7 +3,6 @@ package mhttp
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"github.com/CelesteComet/celeste-auth-service/app"
 	"github.com/dgrijalva/jwt-go"
 	"golang.org/x/crypto/bcrypt"
@@ -28,11 +27,9 @@ func (h *UserHandler) CreateUser() http.Handler {
 			log.Println("Error decoding")
 			log.Println(err)
 		}
-		log.Println(user)
 
 		if user.Email == "" || user.Password == "" {
-			log.Println("invalid json")
-			http.Error(w, "invalid json", 400)
+			http.Error(w, err.Error(), http.StatusUnauthorized)
 			return
 		}
 
@@ -43,23 +40,26 @@ func (h *UserHandler) CreateUser() http.Handler {
 			http.Error(w, "bcrypt error", 500)
 		}
 
-		log.Println(user)
 		// Check if user exists already
 		// Otherwise create a user and save to database
-		rows, err := h.DB.Query("insert into member (email, password) values ($1, $2)", user.Email, hash)
-		if err != nil {
-			http.Error(w, "server error", 400)
-			return
+		id := 0
+		h.DB.QueryRow("insert into member (email, password) values ($1, $2) RETURNING id", user.Email, hash).Scan(&id)
+		if id == 0 {
+			http.Error(w, "bad post", http.StatusUnauthorized)
+			return 
 		}
+
+		user.Id = id 
+
+		tokenString := h.ProvideToken(&user)
+		w.Header().Set("JWT", tokenString)
 
 		// Create a cookie and set it
 		expiration := time.Now().Add(365 * 24 * time.Hour)
-		cookie := http.Cookie{Name: "Bruce", Value: "isCool", Expires: expiration}
+		cookie := http.Cookie{Name: "CAuth", Value: w.Header().Get("JWT"), Expires: expiration}
 		http.SetCookie(w, &cookie)
 
-		h.ProvideToken(&user, &w)
-
-		json.NewEncoder(w).Encode(&rows)
+		json.NewEncoder(w).Encode(&user)
 	})
 }
 
@@ -69,32 +69,16 @@ func (h *UserHandler) FindUserByCredentials() http.Handler {
 	})
 }
 
-func (h *UserHandler) ProvideToken(u *app.User, w *http.ResponseWriter) string {
+func (h *UserHandler) ProvideToken(u *app.User) string {
 	// Create a new token object, specifying signing method and the claims
 	// you would like it to contain.
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"user": "wd",
+		"id": u.Id,
+		"email": u.Email,
 	})
 
 	// Sign and get the complete encoded token as a string using the secret
-	tokenString, err := token.SignedString([]byte("lipy"))
-
-	fmt.Println(tokenString, err)
-
-	// validate token
-	vtoken, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		_, ok := token.Method.(*jwt.SigningMethodHMAC)
-		if !ok {
-			return nil, nil
-		}
-		return []byte("liapy"), nil
-	})
-
-	if vtoken.Valid {
-		log.Println("YOU GOOD TO GO!")
-	} else {
-		log.Println("Invalid token")
-	}
-
+	tokenString, _ := token.SignedString([]byte("secret"))
+	
 	return tokenString
 }
