@@ -8,7 +8,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"log"
 	"net/http"
-	"time"
 )
 
 type UserHandler struct {
@@ -48,16 +47,23 @@ func (h *UserHandler) CreateUser() http.Handler {
 			http.Error(w, "bad post", http.StatusUnauthorized)
 			return 
 		}
-
 		user.Id = id 
-
 		tokenString := h.ProvideToken(&user)
 		w.Header().Set("JWT", tokenString)
 
 		// Create a cookie and set it
-		expiration := time.Now().Add(365 * 24 * time.Hour)
-		cookie := http.Cookie{Name: "CAuth", Value: w.Header().Get("JWT"), Expires: expiration}
-		http.SetCookie(w, &cookie)
+		// If they have a cookie, get it and replace the JWT, otherwise give them a new one
+		/*
+		cookie, err := r.Cookie("JWT")
+		if err != nil {
+			expiration := time.Now().Add(365 * 24 * time.Hour)
+			cookie = http.Cookie{Name: "JWT", Value: w.Header().Get("JWT"), Expires: expiration}			
+		} else {
+			cookie.Value = w.Header().Get("JWT")
+		}
+		*/
+
+		//http.SetCookie(w, &cookie)
 
 		json.NewEncoder(w).Encode(&user)
 	})

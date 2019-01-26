@@ -26,28 +26,6 @@ var (
 	connStr = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
 )
 
-type AuthHandler struct {
-	next http.Handler
-}
-
-var _ app.AuthHandler = &AuthHandler{}
-
-func (h *AuthHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	cookie, err := r.Cookie("CCCookie")
-	if err != nil {
-		fmt.Fprintf(w, "cookie not found")
-		return
-	}
-
-	cookie.HttpOnly = true
-
-	http.SetCookie(w, cookie)
-	fmt.Fprintf(w, cookie.Value)
-
-	h.next.ServeHTTP(w, r)
-}
-
-
 type protectedRouteHandler struct{}
 
 func (h *protectedRouteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {

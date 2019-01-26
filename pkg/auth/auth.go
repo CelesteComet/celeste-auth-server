@@ -10,12 +10,19 @@ type AuthHandler struct {
   next http.Handler
 }
 
+type AdminHandler struct {
+  next http.Handler  
+}
+
+type LogOutHandler struct {}
+
 func (h *AuthHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-  cookie, err := r.Cookie("CAuth")
+  cookie, err := r.Cookie("JWT")
   if err != nil {
     http.Error(w, err.Error(), http.StatusUnauthorized)
     return
   }
+
 
   // If Cookie exists, check the JWT
   tokenString := cookie.Value
@@ -29,7 +36,6 @@ func (h *AuthHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     }
     return []byte("secret"), nil
   })
-
   if err != nil {
     http.Error(w, err.Error(), http.StatusUnauthorized)
     return
@@ -46,14 +52,33 @@ func (h *AuthHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     fmt.Printf("Key: %v, value: %v\n", key, val)
   }
 
-
   // Set HttpOnly To Prevent Future Tampering
-  cookie.HttpOnly = true
-  http.SetCookie(w, cookie)
+  http.SetCookie(w, &http.Cookie{
+    Name:   "JWT",
+    Value: tokenString,
+    HttpOnly: true,
+    Path: "/",
+  })
+
   h.next.ServeHTTP(w, r)
+}
+
+func (h *AdminHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {}
+
+func (h *LogOutHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+  http.SetCookie(w, &http.Cookie{
+    Name:   "JWT",
+    Value:  "",
+    Path:   "/",
+    MaxAge: -1,
+  })
 }
 
 func MustAuth(handler http.Handler) http.Handler {
   return &AuthHandler{next: handler}
+}
+
+func IsAdmin(handler http.Handler) http.Handler {
+  return &AdminHandler{next: handler} 
 }
 
