@@ -7,7 +7,6 @@ import (
 	"github.com/CelesteComet/celeste-auth-server/pkg/auth"
 	"github.com/CelesteComet/celeste-auth-server/app/mhttp"
 	"github.com/gorilla/mux"
-	"github.com/rs/cors"
 	_ "github.com/lib/pq"
 	"log"
 	"net/http"
@@ -34,6 +33,23 @@ func (h *protectedRouteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 	fmt.Fprintf(w, "you are authenticated")
 }
 
+type corsHandler struct {
+	next http.Handler
+}
+
+func (handler *corsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Expose-Headers", "JWT")
+	w.Header().Set("Access-Control-Expose-Headers", "Jwt")
+	handler.ServeHTTP(w, r)
+}
+
+func withCors(h http.Handler) http.Handler {
+	return &corsHandler{next: h}
+}
+
+
+
 func main() {
 	log.Println("Starting Authentication Service")
 	log.Println("Connecting to AWS RDS Postgresql server")
@@ -47,16 +63,9 @@ func main() {
 	s := &app.Server{Port: ":1337", DB: db, Router: router}
 	us := mhttp.UserHandler{DB: db}
 
-	c := cors.New(cors.Options{
-		AllowedOrigins: []string{"*"},
-    AllowedHeaders: []string{"Jwt", "JWT"},
-    ExposedHeaders: []string{"Jwt", "JWT"},
-    OptionsPassthrough: false,
-	})
-
 	// Routes
 	s.Router.Handle("/user", us.CreateUser()).Methods("POST")
 	s.Router.Handle("/", auth.MustAuth(&protectedRouteHandler{}))
 	log.Println("Service is now running on port 1337")
-	http.ListenAndServe(s.Port, c.Handler(s.Router))
+	http.ListenAndServe(s.Port, withCors(s.Router))
 }
