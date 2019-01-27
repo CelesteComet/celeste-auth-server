@@ -43,7 +43,6 @@ func (handler *corsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Expose-Headers", "JWT")
 	w.Header().Set("Access-Control-Expose-Headers", "Jwt")
 	handler.ServeHTTP(w, r)
-
 }
 
 func withCors(h http.Handler) http.Handler {
@@ -65,12 +64,30 @@ func main() {
 	s := &app.Server{Port: ":1337", DB: db, Router: router}
 	us := mhttp.UserHandler{DB: db}
 
+	// Cors Setup
+	corsOpts := cors.Options{
+		AllowedOrigins: []string{"*"},
+		AllowedMethods: []string{
+			http.MethodHead,
+			http.MethodGet,
+			http.MethodPost,
+			http.MethodPut,
+			http.MethodPatch,
+			http.MethodDelete,
+		},
+		AllowedHeaders:   []string{"*"},
+		ExposedHeaders:   []string{"JWT", "Jwt"},
+		AllowCredentials: false,	
+	}
+
+	cors := cors.New(corsOpts)
+
 
 
 	// Routes
 	s.Router.Handle("/user", us.CreateUser()).Methods("POST")
 	s.Router.Handle("/", auth.MustAuth(&protectedRouteHandler{}))
 	log.Println("Service is now running on port 1337")
-	corsHandler := cors.AllowAll().Handler(s.Router)
-	http.ListenAndServe(s.Port, corsHandler)
+	withCorsRouter := cors.Handler(s.Router)
+	http.ListenAndServe(s.Port, withCorsRouter)
 }
