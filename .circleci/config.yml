@@ -3,9 +3,12 @@ jobs:
   build:
     docker:
       - image: circleci/golang
-    working_directory: ~/go/src/github.com/CelesteComet/celeste-web-server
+    working_directory: ~/go/src/github.com/CelesteComet/celeste-auth-service
     steps:
       - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "f5:93:91:c1:eb:be:f0:62:8f:71:7a:7c:4e:ed:b0:4c"
       - run:
           name: Setup Environment
           command: |
@@ -13,10 +16,19 @@ jobs:
             echo 'export TAG=latest' >> $BASH_ENV
             echo 'export IMAGE_NAME=celeste-auth-service' >> $BASH_ENV 
             echo 'export DOCKER_NAME=brucewong21' >> $BASH_ENV
-            echo 'export PORT_TO_CONTAINER_MAP=6800:6800' >> $BASH_ENV
+            echo 'export PORT_TO_CONTAINER_MAP=80:1337' >> $BASH_ENV
+            echo 'export AWS_DB_USERNAME=$AWS_DB_USERNAME' >> $BASH_ENV
+            echo 'export AWS_DB_PASSWORD=$AWS_DB_PASSWORD' >> $BASH_ENV
+      - run:
+          name: Fetch Dependencies
+          command: |
+            go get github.com/lib/pq
+            go get github.com/gorilla/mux
+            go get github.com/gorilla/handlers
       - run:
           name: Run Tests
           command: |
+            go get 
             go test
       - setup_remote_docker:
           docker_layer_caching: true
