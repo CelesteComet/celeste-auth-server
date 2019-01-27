@@ -51,6 +51,7 @@ func main() {
 		AllowedOrigins: []string{"*"},
     AllowedHeaders: []string{"Jwt", "JWT"},
     ExposedHeaders: []string{"Jwt", "JWT"},
+    OptionsPassthrough: true,
 	})
 
 	// Routes
