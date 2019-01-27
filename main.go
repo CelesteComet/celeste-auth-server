@@ -47,9 +47,13 @@ func main() {
 	s := &app.Server{Port: ":1337", DB: db, Router: router}
 	us := mhttp.UserHandler{DB: db}
 
+	c := cors.New(cors.Options{
+	    AllowedHeaders: []string{"Jwt", "JWT"},
+	})
+
 	// Routes
 	s.Router.Handle("/user", us.CreateUser()).Methods("POST")
 	s.Router.Handle("/", auth.MustAuth(&protectedRouteHandler{}))
 	log.Println("Service is now running on port 1337")
-	http.ListenAndServe(s.Port, cors.Default().Handler(s.Router))
+	http.ListenAndServe(s.Port, c.Handler(s.Router))
 }
