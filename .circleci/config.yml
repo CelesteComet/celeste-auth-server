@@ -25,6 +25,8 @@ jobs:
             go get github.com/lib/pq
             go get github.com/gorilla/mux
             go get github.com/gorilla/handlers
+            go get github.com/CelesteComet/celeste-auth-server/pkg/auth
+            go get github.com/CelesteComet/celeste-auth-server/app/mhttp"            
       - run:
           name: Run Tests
           command: |
