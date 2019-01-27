@@ -49,6 +49,7 @@ func main() {
 
 	c := cors.New(cors.Options{
 	    AllowedHeaders: []string{"Jwt", "JWT"},
+	    ExposedHeaders: []string{"Jwt", "JWT"},
 	})
 
 	// Routes
