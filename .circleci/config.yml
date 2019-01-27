@@ -33,11 +33,11 @@ jobs:
             go test
       - setup_remote_docker:
           docker_layer_caching: true
-      - run:
+      - run:          
           name: Build and push Docker image
           command: |
             docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
             docker build -t $IMAGE_NAME:$TAG .
             docker tag $IMAGE_NAME:$TAG brucewong21/$IMAGE_NAME:$TAG
             docker push brucewong21/$IMAGE_NAME:$TAG
-            ssh -o StrictHostKeyChecking=no ec2-user@ec2-3-84-145-40.compute-1.amazonaws.com "/bin/bash ./deploy_app.sh $DOCKER_NAME/$IMAGE_NAME:$TAG $IMAGE_NAME $PORT_TO_CONTAINER_MAP"
+            ssh -o StrictHostKeyChecking=no ec2-user@ec2-3-82-107-155.compute-1.amazonaws.com "/bin/bash ./deploy_microservice.sh $DOCKER_NAME/$IMAGE_NAME:$TAG $IMAGE_NAME $PORT_TO_CONTAINER_MAP"
