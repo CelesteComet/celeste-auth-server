@@ -3,9 +3,9 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"github.com/CelesteComet/celeste-auth-service/app"
-	"github.com/CelesteComet/celeste-auth-service/pkg/auth"
-	"github.com/CelesteComet/celeste-auth-service/app/mhttp"
+	"github.com/CelesteComet/celeste-auth-server/app"
+	"github.com/CelesteComet/celeste-auth-server/pkg/auth"
+	"github.com/CelesteComet/celeste-auth-server/app/mhttp"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 	"log"

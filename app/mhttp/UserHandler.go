@@ -3,7 +3,7 @@ package mhttp
 import (
 	"database/sql"
 	"encoding/json"
-	"github.com/CelesteComet/celeste-auth-service/app"
+	"github.com/CelesteComet/celeste-auth-server/app"
 	"github.com/dgrijalva/jwt-go"
 	"golang.org/x/crypto/bcrypt"
 	"log"
