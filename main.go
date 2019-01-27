@@ -76,7 +76,7 @@ func main() {
 			http.MethodDelete,
 		},
 		AllowedHeaders:   []string{"*"},
-		ExposedHeaders:   []string{"JWT", "Jwt"},
+		ExposedHeaders:   []string{"JWT"},
 		AllowCredentials: false,	
 	}
 
