@@ -48,8 +48,9 @@ func main() {
 	us := mhttp.UserHandler{DB: db}
 
 	c := cors.New(cors.Options{
-	    AllowedHeaders: []string{"Jwt", "JWT"},
-	    ExposedHeaders: []string{"Jwt", "JWT"},
+		AllowedOrigins: []string{"*"},
+    AllowedHeaders: []string{"Jwt", "JWT"},
+    ExposedHeaders: []string{"Jwt", "JWT"},
 	})
 
 	// Routes
