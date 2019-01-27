@@ -8,6 +8,7 @@ import (
 	"github.com/CelesteComet/celeste-auth-server/app/mhttp"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
+	"github.com/rs/cors"
 	"log"
 	"net/http"
 	"os"
@@ -42,6 +43,7 @@ func (handler *corsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Expose-Headers", "JWT")
 	w.Header().Set("Access-Control-Expose-Headers", "Jwt")
 	handler.ServeHTTP(w, r)
+
 }
 
 func withCors(h http.Handler) http.Handler {
@@ -63,9 +65,12 @@ func main() {
 	s := &app.Server{Port: ":1337", DB: db, Router: router}
 	us := mhttp.UserHandler{DB: db}
 
+
+
 	// Routes
 	s.Router.Handle("/user", us.CreateUser()).Methods("POST")
 	s.Router.Handle("/", auth.MustAuth(&protectedRouteHandler{}))
 	log.Println("Service is now running on port 1337")
-	http.ListenAndServe(s.Port, withCors(s.Router))
+	corsHandler := cors.AllowAll().Handler(s.Router)
+	http.ListenAndServe(s.Port, corsHandler)
 }
