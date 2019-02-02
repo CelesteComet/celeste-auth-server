@@ -51,20 +51,6 @@ func (h *UserHandler) CreateUser() http.Handler {
 		tokenString := h.ProvideToken(&user)
 		w.Header().Set("JWT", tokenString)
 
-		// Create a cookie and set it
-		// If they have a cookie, get it and replace the JWT, otherwise give them a new one
-		/*
-		cookie, err := r.Cookie("JWT")
-		if err != nil {
-			expiration := time.Now().Add(365 * 24 * time.Hour)
-			cookie = http.Cookie{Name: "JWT", Value: w.Header().Get("JWT"), Expires: expiration}			
-		} else {
-			cookie.Value = w.Header().Get("JWT")
-		}
-		*/
-
-		//http.SetCookie(w, &cookie)
-
 		json.NewEncoder(w).Encode(&user)
 	})
 }
@@ -88,3 +74,4 @@ func (h *UserHandler) ProvideToken(u *app.User) string {
 	
 	return tokenString
 }
+

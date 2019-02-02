@@ -30,8 +30,7 @@ var (
 type protectedRouteHandler struct{}
 
 func (h *protectedRouteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("WELL WELL WELL")
-	fmt.Fprintf(w, "you are authenticated")
+	w.Write([]byte("OK"))
 }
 
 type corsHandler struct {
@@ -48,8 +47,6 @@ func (handler *corsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func withCors(h http.Handler) http.Handler {
 	return &corsHandler{next: h}
 }
-
-
 
 func main() {
 	log.Println("Starting Authentication Service")
@@ -82,10 +79,8 @@ func main() {
 
 	cors := cors.New(corsOpts)
 
-
-
 	// Routes
-	s.Router.Handle("/user", us.CreateUser()).Methods("POST")
+	s.Router.Handle("/users", us.CreateUser()).Methods("POST")
 	s.Router.Handle("/", auth.MustAuth(&protectedRouteHandler{}))
 	log.Println("Service is now running on port 1337")
 	withCorsRouter := cors.Handler(s.Router)
