@@ -80,6 +80,7 @@ func main() {
 	cors := cors.New(corsOpts)
 
 	// Routes
+	s.Router.Handle("/users", us.FindUserByCredentials()).Methods("GET")
 	s.Router.Handle("/users", us.CreateUser()).Methods("POST")
 	s.Router.Handle("/", auth.MustAuth(&protectedRouteHandler{}))
 	log.Println("Service is now running on port 1337")

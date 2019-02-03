@@ -57,7 +57,34 @@ func (h *UserHandler) CreateUser() http.Handler {
 
 func (h *UserHandler) FindUserByCredentials() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		decoder := json.NewDecoder(r.Body)
+		user := app.User{}
+		err := decoder.Decode(&user)
+		if err != nil {
+			log.Println("Error decoding")
+			log.Println(err)
+		}		
+		// Look for the user in the database
+		dbUser := app.User{}
+		h.DB.QueryRow("select * from member where email = $1", user.Email).Scan(&dbUser.Id, &dbUser.Email, &dbUser.Password)
 
+		if (&dbUser.Email == nil) {
+			http.Error(w, "user doesnt exist", http.StatusUnauthorized)
+			return
+		}
+
+		// decode password
+		log.Println(user.Password)
+		log.Println(dbUser.Email)
+		err = bcrypt.CompareHashAndPassword([]byte(dbUser.Password), []byte(user.Password))
+		if (err != nil) {
+			// Bad password
+			http.Error(w, "bad password", http.StatusUnauthorized)
+			return
+		}
+		tokenString := h.ProvideToken(&dbUser)
+		w.Header().Set("JWT", tokenString)
+		json.NewEncoder(w).Encode(&dbUser)		
 	})
 }
 
