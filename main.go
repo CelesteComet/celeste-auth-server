@@ -21,9 +21,10 @@ import (
 )
 
 type User struct {
-	ID       int    `json:"id"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	ID          int    `json:"id"`
+	Email       string `json:"email"`
+	Password    string `json:"password"`
+	DisplayName string `json:"display_name" db:"display_name"`
 }
 
 type UserHandler struct {
@@ -56,7 +57,7 @@ func (h *UserHandler) FindByCredentials() http.Handler {
 
 		// Look for the user in the database
 		dbUser := User{}
-		h.DB.QueryRow("select * from member where email = $1", user.Email).Scan(&dbUser.ID, &dbUser.Email, &dbUser.Password)
+		h.DB.QueryRow("select * from member where email = $1", user.Email).Scan(&dbUser.ID, &dbUser.Email, &dbUser.Password, &dbUser.DisplayName)
 
 		if &dbUser.Email == nil {
 			errors := []string{errorMessages.BadCreds}
@@ -68,6 +69,7 @@ func (h *UserHandler) FindByCredentials() http.Handler {
 		err = bcrypt.CompareHashAndPassword([]byte(dbUser.Password), []byte(user.Password))
 		if err != nil {
 			errors := []string{"Email or Password is Incorrect"}
+			log.Println("THIS IS HAPPENING")
 			respond.With(w, r, http.StatusUnauthorized, errors)
 			return
 		}
@@ -122,8 +124,9 @@ func (h *UserHandler) ProvideToken(u *User, w http.ResponseWriter) string {
 	// Create a new token object, specifying signing method and the claims
 	// you would like it to contain.
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"id":    u.ID,
-		"email": u.Email,
+		"id":           u.ID,
+		"email":        u.Email,
+		"display_name": u.DisplayName,
 	})
 
 	// Sign and get the complete encoded token as a string using the secret
@@ -196,7 +199,7 @@ func main() {
 	}
 	log.Println("Server connection successful")
 	defer db.Close()
-
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	// Model Handlers
 	userHandler := UserHandler{DB: db}
 
