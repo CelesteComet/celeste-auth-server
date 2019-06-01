@@ -37,4 +37,4 @@ jobs:
             docker build -t $IMAGE_NAME:$TAG .
             docker tag $IMAGE_NAME:$TAG brucewong21/$IMAGE_NAME:$TAG
             docker push brucewong21/$IMAGE_NAME:$TAG
-            ssh -o StrictHostKeyChecking=no ec2-user@ec2-54-85-14-41.compute-1.amazonaws.com "/bin/bash ./deploy_microservice.sh $DOCKER_NAME/$IMAGE_NAME:$TAG $IMAGE_NAME $PORT_TO_CONTAINER_MAP"
+            ssh -o StrictHostKeyChecking=no ec2-user@ec2-54-172-5-144.compute-1.amazonaws.com "/bin/bash ./deploy_microservice.sh $DOCKER_NAME/$IMAGE_NAME:$TAG $IMAGE_NAME $PORT_TO_CONTAINER_MAP"
